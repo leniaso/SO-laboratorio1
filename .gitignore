@@ -1,0 +1,11 @@
+# Binarios compilados
+monitor_app
+alert_app
+*.exe
+
+# Logs y datos generados en tiempo de ejecución
+system_monitor_logs/
+
+# Otros
+.DS_Store
+EOF
