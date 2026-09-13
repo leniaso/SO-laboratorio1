@@ -1,5 +1,9 @@
 # SO-laboratorio1
 
+Realizado por:
+Simon Correa Rios
+Alejandro Naranjo Cataño
+
 Advanced System Monitor — Práctica #1A del curso de Sistemas Operativos (Universidad de Antioquia).
 
 Herramienta de monitoreo de recursos del sistema con historial, detección de anomalías, alertas configurables y generación de reportes. Implementada en Go en lugar de Bash, usando las interfaces nativas de Linux (`/proc`, `syscall`) y comandos del sistema (`ps`, `ss`, `ip`).
