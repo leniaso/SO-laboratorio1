@@ -112,41 +112,49 @@ func registrarAlerta(estado *EstadoAlertas, tipo string, nivel string, mensaje s
 func verificarAlertas() {
 	estado := cargarEstado()
 
-	// 1. RAM > 90%
+	// Umbrales configurables vía "main_monitor --config" (system_monitor_logs/config.json).
+	// Si no existe el archivo todavía, LeerConfig devuelve los valores por defecto del enunciado.
+	config, err := monitor.LeerConfig()
+	if err != nil {
+		fmt.Println("Aviso: no se pudo leer config.json, usando umbrales por defecto:", err)
+	}
+
+	// 1. RAM > umbral configurado (90% por defecto)
 	memTotal, memAvailable, err := monitor.ObtenerMemoria()
 	if err == nil {
 		porcentaje := (float64(memTotal-memAvailable) / float64(memTotal)) * 100
-		if porcentaje > 90 {
+		if porcentaje > config.UmbralRAMPercent {
 			registrarAlerta(&estado, "RAM", "CRITICAL",
-				fmt.Sprintf("Uso de memoria en %.2f%% (umbral: 90%%)", porcentaje))
+				fmt.Sprintf("Uso de memoria en %.2f%% (umbral: %.0f%%)", porcentaje, config.UmbralRAMPercent))
 		}
 	} else {
 		fmt.Println("Error obteniendo memoria:", err)
 	}
 
-	// 2. Load average > 5 durante 3 comprobaciones consecutivas
+	// 2. Load average > umbral configurado durante N comprobaciones consecutivas (5 y 3 por defecto)
 	load1, _, _, err := monitor.ObtenerCargaPromedio()
 	if err == nil {
-		if load1 > 5 {
+		if load1 > config.UmbralLoadCPU {
 			estado.ContadorCPUAlta++
 		} else {
 			estado.ContadorCPUAlta = 0
 		}
 
-		if estado.ContadorCPUAlta >= 3 {
+		if estado.ContadorCPUAlta >= config.ChequesConsecutivos {
 			registrarAlerta(&estado, "CPU_LOAD", "CRITICAL",
-				fmt.Sprintf("Load average en %.2f durante %d comprobaciones consecutivas (umbral: 5)", load1, estado.ContadorCPUAlta))
+				fmt.Sprintf("Load average en %.2f durante %d comprobaciones consecutivas (umbral: %.1f)",
+					load1, estado.ContadorCPUAlta, config.UmbralLoadCPU))
 		}
 	} else {
 		fmt.Println("Error obteniendo load average:", err)
 	}
 
-	// 3. Disco > 85%
+	// 3. Disco > umbral configurado (85% por defecto)
 	usoDisco, err := monitor.ObtenerUsoDisco("/")
 	if err == nil {
-		if usoDisco > 85 {
+		if usoDisco > config.UmbralDiscoPercent {
 			registrarAlerta(&estado, "DISCO", "WARNING",
-				fmt.Sprintf("Uso de disco en %.2f%% (umbral: 85%%)", usoDisco))
+				fmt.Sprintf("Uso de disco en %.2f%% (umbral: %.0f%%)", usoDisco, config.UmbralDiscoPercent))
 		}
 	} else {
 		fmt.Println("Error obteniendo uso de disco:", err)

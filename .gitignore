@@ -1,6 +1,8 @@
 # Binarios compilados
 monitor_app
 alert_app
+main_monitor
+report_app
 *.exe
 
 # Logs y datos generados en tiempo de ejecución
